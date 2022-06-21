@@ -1,0 +1,6 @@
+# images uploaded by the users
+images/*
+
+
+# python cache file
+*.pyc
