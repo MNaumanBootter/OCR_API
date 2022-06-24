@@ -1,6 +1,7 @@
 
 from fastapi import APIRouter, File, UploadFile, Depends, HTTPException, status
 from auth import auth_handler
+from schemas import ScanTextFromImageOut
 import easyocr
 import shutil
 
@@ -8,7 +9,7 @@ router = APIRouter()
 
 
 # this endpoint takes an image and returns the english text extracted by OCR
-@router.post("/scan_text", dependencies=[Depends(auth_handler.auth_wrapper)])
+@router.post("/scan_text", dependencies=[Depends(auth_handler.auth_wrapper)], response_model=ScanTextFromImageOut)
 async def scan_text_from_image(image: UploadFile = File(...)):
 
     print(f"File Name: {image.filename}")
@@ -29,8 +30,9 @@ async def scan_text_from_image(image: UploadFile = File(...)):
     # scanning image by OCR package
     ocr_reader = easyocr.Reader(['en'], gpu=False)
     ocr_result = ocr_reader.readtext(destination_file_path)
-    ocr_result_text = [text for (bbox, text, prob) in ocr_result]
+    ocr_result_text_list = [text for (bbox, text, prob) in ocr_result]
 
     print(f"File scanned successfully.")
 
-    return {"filename": image.filename, "result": ocr_result_text}
+    response: ScanTextFromImageOut = {"result": ocr_result_text_list}
+    return response

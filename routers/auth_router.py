@@ -1,7 +1,8 @@
 
+from urllib import response
 from email_validator import validate_email, EmailNotValidError
 from fastapi import HTTPException, Depends, APIRouter
-from schemas import AuthDetails
+from schemas import SignupIn, SignupOut, LoginIn, LoginOut
 from requests import Session
 from auth import auth_handler
 from database import get_db
@@ -10,8 +11,8 @@ from models import User
 router = APIRouter()
 
 
-@router.post("/signup", status_code=201)
-def signup(auth_details: AuthDetails, db: Session = Depends(get_db)):
+@router.post("/signup", status_code=201, response_model=SignupOut, response_model_exclude_unset=True)
+def signup(auth_details: SignupIn, db: Session = Depends(get_db)):
     try:
         email = validate_email(auth_details.email).email
     except EmailNotValidError as e:
@@ -26,11 +27,12 @@ def signup(auth_details: AuthDetails, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
-    return {"user": new_user}
+    response: SignupOut = new_user
+    return response
 
 
-@router.post("/login")
-def login(auth_details: AuthDetails, db: Session = Depends(get_db)):
+@router.post("/login", response_model=LoginOut)
+def login(auth_details: LoginIn, db: Session = Depends(get_db)):
 
     user = db.query(User).filter(User.email == auth_details.email).first()
 
@@ -39,4 +41,5 @@ def login(auth_details: AuthDetails, db: Session = Depends(get_db)):
 
     token = auth_handler.encode_token(user.email)
 
-    return {"token": token}
+    response: LoginOut = {"token": token}
+    return response
