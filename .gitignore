@@ -166,3 +166,7 @@ cython_debug/
 *.JPEG
 *.png
 *.PNG
+
+# alembic
+migrations/versions/*
+migrations/*.mako

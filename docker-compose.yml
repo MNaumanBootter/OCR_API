@@ -1,0 +1,53 @@
+version: '0.1'
+
+services:
+
+  api:
+    links:
+      - db
+    container_name: api
+    build: ./
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+    - .:/code
+    networks:
+      - local-net
+
+
+  db:
+    image: mysql
+    restart: unless-stopped
+    container_name: mysql_db
+    environment:
+      - MYSQL_ROOT_PASSWORD=pass
+    ports:
+      - "3306:3306"
+    volumes:
+      -  mysql_data:/var/lib/mysql
+    networks:
+      - local-net
+
+
+  adminer:
+    container_name: adminer_ocr_api
+    image: adminer
+    depends_on:
+      - db
+    links:
+      - db:db
+    restart: unless-stopped
+    ports:
+      - 8080:8080
+    networks:
+      - local-net
+
+
+volumes:
+  mysql_data:
+
+
+networks:
+  local-net:
+    driver: bridge
