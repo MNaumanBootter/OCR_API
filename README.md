@@ -1,7 +1,7 @@
 # OCR_API
 An API that takes an image as input and responds with the English text extracted from the image by using OCR technology.
 
-# Technology used: 
+# Technology used:
 Framework: FastAPI
 
 

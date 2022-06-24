@@ -1,4 +1,4 @@
-version: '0.1'
+# version: '3.9' # optional
 
 services:
 
@@ -6,7 +6,7 @@ services:
     links:
       - db
     container_name: api
-    build: ./
+    build: .
     restart: unless-stopped
     ports:
       - "8000:8000"
@@ -14,6 +14,17 @@ services:
     - .:/code
     networks:
       - local-net
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - HASH_ALGORITHM=${HASH_ALGORITHM}
+      - DB_USER=${DB_USER}
+      - DB_USER_PASSWORD=${DB_USER_PASSWORD}
+      - API_PORT=${API_PORT}
+      - DB_PORT=${DB_PORT}
+      - APP_DATABASE=${APP_DATABASE}
+      - DB_DOCKER_SERVICE=${DB_DOCKER_SERVICE}
+      - DB_DRIVER=${DB_DRIVER}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES}
 
 
   db:

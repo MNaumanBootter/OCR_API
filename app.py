@@ -1,8 +1,10 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, status
+from email_validator import validate_email, EmailNotValidError
 from database import engine, get_db, Base
 from schemas import AuthDetails
 from requests import Session
 from auth import AuthHandler
+from config import settings
 from models import User
 import uvicorn
 import easyocr
@@ -27,6 +29,10 @@ def index():
 
 @app.post("/signup", status_code=201)
 def signup(auth_details: AuthDetails, db: Session = Depends(get_db)):
+    try:
+        email = validate_email(email).email
+    except EmailNotValidError as e:
+        raise HTTPException(status_code=400, detail="Email not valid")
 
     db_user = db.query(User).filter(User.email == auth_details.email).first()
     if db_user:
@@ -83,4 +89,4 @@ async def scan_text_from_image(image: UploadFile = File(...)):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=settings.API_PORT)

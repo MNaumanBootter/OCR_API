@@ -2,9 +2,9 @@ FROM python:3.10
 
 WORKDIR /code
 
-ADD ./requirements.txt /temp/requirements.txt
+ADD ./requirements.txt .
 
-RUN pip install -r /temp/requirements.txt
+RUN pip install -r requirements.txt
 
 ADD . /code
 
