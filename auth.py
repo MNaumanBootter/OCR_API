@@ -4,12 +4,13 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from numpy import deprecate
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
-from config import settings
+from config import app_config
+
 
 class AuthHandler():
     security = HTTPBearer()
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    secret=settings.SECRET_KEY
+    secret=app_config.SECRET_KEY
 
     def get_password_hash(self, password):
         return self.pwd_context.hash(password)
@@ -19,16 +20,16 @@ class AuthHandler():
 
     def encode_token(self, user_id):
         payload = {
-            'exp': datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+            'exp': datetime.utcnow() + timedelta(minutes=app_config.ACCESS_TOKEN_EXPIRE_MINUTES),
             'iat': datetime.utcnow(),
             'sub': user_id
         }
 
-        return jwt.encode(payload, self.secret, algorithm=settings.HASH_ALGORITHM)
+        return jwt.encode(payload, self.secret, algorithm=app_config.HASH_ALGORITHM)
 
     def decode_token(self, token):
         try:
-            payload = jwt.decode(token, self.secret, algorithms=[settings.HASH_ALGORITHM])
+            payload = jwt.decode(token, self.secret, algorithms=[app_config.HASH_ALGORITHM])
             return payload['sub']
         except jwt.ExpiredSignatureError:
             raise HTTPException(status_code=401, detail='Signature has expired')

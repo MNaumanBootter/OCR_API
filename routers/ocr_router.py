@@ -1,4 +1,3 @@
-
 from fastapi import APIRouter, File, UploadFile, Depends, HTTPException, status
 from auth import auth_handler
 from schemas import ScanTextFromImageOut

@@ -1,17 +1,59 @@
-from pydantic import BaseSettings
+from os import path
+from decouple import config
 
-class Settings(BaseSettings):
-    SECRET_KEY: str
-    HASH_ALGORITHM: str
-    DB_USER: str
-    DB_USER_PASSWORD: str
-    API_PORT: int
-    DB_PORT: int
-    APP_DATABASE: str
-    DB_DRIVER: str
-    DB_DOCKER_SERVICE: str
-    ACCESS_TOKEN_EXPIRE_MINUTES: int
-    # SQLALCHEMY_DATABASE_URL: str = f"{DB_DRIVER}://{DB_USER}:{DB_USER_PASSWORD}@{DB_DOCKER_SERVICE}/{APP_DATABASE}"
-    # ALEMBIC_DATABASE_URL: str = f"{DB_DRIVER}://{DB_USER}:{DB_USER_PASSWORD}@127.0.0.1:{DB_PORT}/{APP_DATABASE}"
+try:
+    basedir = path.abspath(path.dirname(__file__))
+except:
+    pass
 
-settings = Settings()
+TEMP_ENV = config('ENV')
+
+class Config:
+    """Base config."""
+    pass
+
+    DATABASE_NAME = "ocr_api"
+
+
+class DevConfig(Config):
+    ENV = 'development'
+    DEBUG = True
+    TESTING = True
+    API_PORT_DOCKER = config('API_PORT_DOCKER', cast=int)
+    DB_HOST = config('DB_HOST')
+    DB_PORT = config('DB_PORT', cast=int)
+    DB_USER = config('DB_USER')
+    DB_PASSWORD = config('DB_PASSWORD')
+    HASH_ALGORITHM = config('HASH_ALGORITHM')
+    DB_DRIVER = config('DB_DRIVER')
+    ACCESS_TOKEN_EXPIRE_MINUTES = config('ACCESS_TOKEN_EXPIRE_MINUTES', cast=int)
+    SECRET_KEY = config('SECRET_KEY')
+
+
+class TestConfig(Config):
+    ENV = 'testing'
+    DEBUG = False
+    TESTING = False
+
+
+class ProdConfig(Config):
+    ENV = 'production'
+    DEBUG = False
+    TESTING = False
+
+
+def get_env():
+    if TEMP_ENV == 'development':
+        app_config = DevConfig()
+        return app_config
+    elif TEMP_ENV == 'testing':
+        app_config = TestConfig()
+        return app_config
+    elif TEMP_ENV == 'production':
+        app_config = ProdConfig()
+        return app_config
+    else:
+        raise Exception("Invalid  ENV environment variable value")
+
+
+app_config = get_env()

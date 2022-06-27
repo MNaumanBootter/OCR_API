@@ -1,4 +1,3 @@
-
 from urllib import response
 from email_validator import validate_email, EmailNotValidError
 from fastapi import HTTPException, Depends, APIRouter
