@@ -22,7 +22,8 @@ services:
     restart: unless-stopped
     container_name: mysql_db
     environment:
-      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
     ports:
       - "${DB_PORT}:3306"
     volumes:

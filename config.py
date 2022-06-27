@@ -12,7 +12,7 @@ class Config:
     """Base config."""
     pass
 
-    DATABASE_NAME = "ocr_api"
+    DATABASE_NAME = config('DB_NAME')
 
 
 class DevConfig(Config):
