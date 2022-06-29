@@ -22,7 +22,7 @@ class DevConfig(Config):
     API_PORT_DOCKER = config('API_PORT_DOCKER', cast=int)
     DB_HOST = config('DB_HOST')
     DB_PORT = config('DB_PORT', cast=int)
-    DB_USER = config('DB_USER')
+    DB_USER = "root"
     DB_PASSWORD = config('DB_PASSWORD')
     HASH_ALGORITHM = config('HASH_ALGORITHM')
     DB_DRIVER = config('DB_DRIVER')

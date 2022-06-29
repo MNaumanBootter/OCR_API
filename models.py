@@ -12,6 +12,7 @@ class User(Base):
     first_name = Column(String(50))
     last_name = Column(String(50))
     phone_number = Column(String(20))
+    address = Column(String(255))
     is_active = Column(Boolean, default=True)
 
 

@@ -18,7 +18,7 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # setting SQLALchemy through environment variables
-config.set_main_option("sqlalchemy.url", f"{app_config.DB_DRIVER}://{app_config.DB_USER}:{app_config.DB_USER_PASSWORD}@127.0.0.1:{app_config.DB_PORT}/{app_config.APP_DATABASE}")
+config.set_main_option("sqlalchemy.url", f"{app_config.DB_DRIVER}://{app_config.DB_USER}:{app_config.DB_PASSWORD}@db:{app_config.DB_PORT}/{app_config.DATABASE_NAME}")
 
 # add your model's MetaData object here
 # for 'autogenerate' support
