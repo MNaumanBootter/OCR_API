@@ -25,5 +25,9 @@ class LoginOut(BaseModel):
     token: str
 
 
+class ScanTextFromImageSingleFile(BaseModel):
+    file_name: str
+    result_text: list[str]
+
 class ScanTextFromImageOut(BaseModel):
-    result: list
+    result: list[ScanTextFromImageSingleFile]
