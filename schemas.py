@@ -25,9 +25,10 @@ class LoginOut(BaseModel):
     token: str
 
 
-class ScanTextFromImageSingleFile(BaseModel):
+class OcrFileResult(BaseModel):
+    id: int
     file_name: str
-    result_text: list[str]
+    text_lines: list[str]
 
 class ScanTextFromImageOut(BaseModel):
-    result: list[ScanTextFromImageSingleFile]
+    result: list[OcrFileResult]

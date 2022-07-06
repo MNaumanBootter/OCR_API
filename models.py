@@ -1,5 +1,6 @@
-from sqlalchemy import Integer, String, Boolean
+from sqlalchemy import ForeignKey, Integer, String, Boolean, Text, DateTime
 from sqlalchemy.sql.schema import Column
+import datetime
 from database import Base
 
 
@@ -16,3 +17,18 @@ class User(Base):
     is_active = Column(Boolean, default=True)
 
 
+class FileResult(Base):
+    __tablename__ = "file_results"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    file_name = Column(String(255), nullable=False)
+    _result = Column('result', Text(), nullable=False)
+    created_date = Column(DateTime, default=datetime.datetime.utcnow)
+
+    @property
+    def result(self):
+        return eval(self._result)
+    @result.setter
+    def result(self, value):
+        self._result = str(value)

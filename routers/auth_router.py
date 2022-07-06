@@ -1,7 +1,7 @@
 from email_validator import validate_email, EmailNotValidError
 from fastapi import HTTPException, Depends, APIRouter
 from schemas import SignupIn, SignupOut, LoginIn, LoginOut
-from requests import Session
+from sqlalchemy.orm import Session
 from auth import auth_handler
 from database import get_db
 from models import User
