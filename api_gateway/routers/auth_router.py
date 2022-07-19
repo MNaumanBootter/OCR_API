@@ -1,0 +1,50 @@
+from email_validator import validate_email, EmailNotValidError
+from fastapi import HTTPException, Depends, APIRouter
+from schemas import SignupIn, SignupOut, LoginIn, LoginOut
+from sqlalchemy.orm import Session
+from auth import auth_handler
+from database import get_db
+from models import User
+
+router = APIRouter()
+
+
+# Signup route
+@router.post("/signup", status_code=201, response_model=SignupOut, response_model_exclude_unset=True)
+def signup(auth_details: SignupIn, db: Session = Depends(get_db)):
+    # validating email
+    try:
+        validate_email(auth_details.email).email
+    except EmailNotValidError:
+        raise HTTPException(status_code=400, detail="Email not valid")
+
+    # checking if user email already exists
+    db_user = db.query(User).filter(User.email == auth_details.email).first()
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    # creating new user
+    new_user = User(email=auth_details.email, password=auth_handler.get_password_hash(auth_details.password))
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    response: SignupOut = new_user
+    return response
+
+
+@router.post("/login", response_model=LoginOut)
+def login(auth_details: LoginIn, db: Session = Depends(get_db)):
+
+    # getting user
+    user = db.query(User).filter(User.email == auth_details.email).first()
+
+    # checking if user not found or password is invalid
+    if (user is None) or (not auth_handler.verify_password(auth_details.password, user.password)):
+        raise HTTPException(status_code=401, detail="Invalid email and/or password")
+
+    # generating new token
+    token = auth_handler.encode_token(user.email)
+
+    response: LoginOut = {"token": token}
+    return response

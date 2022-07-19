@@ -1,0 +1,30 @@
+# version: '3.9' # optional
+
+services:
+  db:
+    image: mysql
+    restart: unless-stopped
+    container_name: db
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "${DB_PORT}:3306"
+    volumes:
+      -  mysql_data:/var/lib/mysql
+      - .:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -P 3306 -p${DB_PASSWORD} | grep 'mysqld is alive' || exit 1"]
+
+
+  adminer:
+    container_name: adminer
+    image: adminer
+    depends_on:
+      - db
+    restart: unless-stopped
+    ports:
+      - ${ADMINER_PORT}:8080
+
+
+volumes:
+  mysql_data:

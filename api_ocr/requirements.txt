@@ -1,0 +1,16 @@
+alembic
+bcrypt
+easyocr
+email-validator
+fastapi
+mysqlclient
+passlib
+pyjwt
+SQLAlchemy
+python-multipart
+python-decouple
+uvicorn
+celery==4.4.7
+redis
+flower
+minio

@@ -1,1 +1,0 @@
-This directory has user uploaded images for OCR.

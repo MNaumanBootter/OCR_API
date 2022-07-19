@@ -1,0 +1,12 @@
+bcrypt
+email-validator
+fastapi
+mysqlclient
+passlib
+pyjwt
+SQLAlchemy
+python-multipart
+python-decouple
+uvicorn
+minio
+requests-async
