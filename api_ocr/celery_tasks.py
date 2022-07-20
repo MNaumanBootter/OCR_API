@@ -1,4 +1,3 @@
-from typing import final
 from config import app_config
 from minio import Minio
 from celery import Celery
@@ -6,6 +5,7 @@ from sqlalchemy.orm import Session
 from models import FileResult
 from database import SessionLocal
 import easyocr
+from config import app_config
 
 
 # initializing celery
@@ -16,10 +16,10 @@ celery.conf.result_backend = app_config.CELERY_RESULT_URL
 
 # initializing MinIO
 minio_client = Minio(
-        "192.168.20.102:9000",
+        f"{app_config.MINIO_HOST}:{app_config.MINIO_PORT}",
         secure=False,
-        access_key="minioadmin",
-        secret_key="minioadmin"
+        access_key=app_config.MINIO_USER,
+        secret_key=app_config.MINIO_PASSWORD
     )
 
 
@@ -41,7 +41,7 @@ def scan_image():
             if unscanned_record:
 
                 # fetching file bytes from minIO
-                file_bytes = minio_client.get_object("ocr-api-images", unscanned_record.file_name).read()
+                file_bytes = minio_client.get_object(app_config.MINIO_BUCKET, unscanned_record.file_name).read()
 
                 # predicting image from ocr reader without bbox result
                 ocr_result = ocr_reader.readtext(file_bytes, detail=0)

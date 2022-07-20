@@ -1,22 +1,23 @@
-from fastapi import Depends
 from sqlalchemy.orm import Session
-from database import get_db
 from models import User, FileResult
 from minio import Minio
 import http3
+from io import BytesIO
+from PIL import Image
+from config import app_config
 
 
 minio_client = Minio(
-        "192.168.20.102:9000",
+        f"{app_config.MINIO_HOST}:{app_config.MINIO_PORT}",
         secure=False,
-        access_key="minioadmin",
-        secret_key="minioadmin"
+        access_key=app_config.MINIO_USER,
+        secret_key=app_config.MINIO_PASSWORD
     )
 
-if not minio_client.bucket_exists("ocr-api-images"):
-    minio_client.make_bucket("ocr-api-images")
+if not minio_client.bucket_exists(app_config.MINIO_BUCKET):
+    minio_client.make_bucket(app_config.MINIO_BUCKET)
 else:
-    print("Bucket 'ocr-api-images' connected")
+    print(f"Bucket {app_config.MINIO_BUCKET} connected")
 
 
 async def get_user_id_by_email(email: str, db: Session):
@@ -34,9 +35,9 @@ async def create_file_result(user_email: str, file_name: str, db: Session):
     return created_file_result.id
 
 
-async def get_all_file_results(user_email: str, db: Session):
+async def get_all_file_results(skip: int, limit: int, user_email: str, db: Session):
     user_id = await get_user_id_by_email(user_email, db)
-    file_results = db.query(FileResult).filter(FileResult.user_id == user_id, FileResult.is_scanned == True).all()
+    file_results = db.query(FileResult).filter(FileResult.user_id == user_id, FileResult.is_scanned == True).offset(skip).limit(limit).all()
     return file_results
 
 
@@ -51,10 +52,26 @@ async def put_image_to_bucket(image_obj):
     image_obj.file.seek(0)
 
     minio_client.put_object(
-        bucket_name="ocr-api-images",
+        bucket_name=app_config.MINIO_BUCKET,
         object_name=image_obj.filename,
         length=image_length,
         data=image_obj.file
+    )
+    return
+
+async def put_video_image_to_bucket(image_ndarrray, image_filename):
+
+    pil_image = Image.fromarray(image_ndarrray.asnumpy())
+    image_bytes = BytesIO()
+    pil_image.save(image_bytes, format='jpeg')
+    image_length = image_bytes.tell()
+    image_bytes.seek(0)
+
+    minio_client.put_object(
+        bucket_name=app_config.MINIO_BUCKET,
+        object_name=image_filename,
+        length=image_length,
+        data=image_bytes
     )
     return
 

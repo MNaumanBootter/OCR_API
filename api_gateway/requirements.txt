@@ -10,3 +10,5 @@ python-decouple
 uvicorn
 minio
 requests-async
+Pillow
+decord

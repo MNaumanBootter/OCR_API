@@ -24,6 +24,11 @@ class DevConfig(Config):
     DB_PORT = config('DB_PORT', cast=int)
     DB_USER = "root"
     DB_PASSWORD = config('DB_PASSWORD')
+    MINIO_USER = config('MINIO_USER')
+    MINIO_PASSWORD = config('MINIO_PASSWORD')
+    MINIO_BUCKET = config('MINIO_BUCKET')
+    MINIO_HOST = config('MINIO_HOST')
+    MINIO_PORT = config('MINIO_PORT')
     HASH_ALGORITHM = config('HASH_ALGORITHM')
     DB_DRIVER = config('DB_DRIVER')
     ACCESS_TOKEN_EXPIRE_MINUTES = config('ACCESS_TOKEN_EXPIRE_MINUTES', cast=int)

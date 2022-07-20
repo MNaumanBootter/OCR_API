@@ -36,10 +36,14 @@ class OcrFileResult(BaseModel):
         orm_mode = True
 
 
-class ScanTextFromImageOut(BaseModel):
+class ScanImageOut(BaseModel):
     message: str
     scan_ids: list[int]
 
+
+class ScanVideoOut(BaseModel):
+    message: str
+    scan_ids: list[int]
 
 class GetScansOut(BaseModel):
     results: list[OcrFileResult]
