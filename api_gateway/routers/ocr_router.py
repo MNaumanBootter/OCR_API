@@ -1,11 +1,11 @@
 from fastapi import APIRouter, UploadFile, Depends, HTTPException, status
 from auth import auth_handler
-from schemas import ScanImageOut, GetScansOut, GetScanOut, ScanVideoOut
+from schemas import ScanImageOut, GetImageScansOut, GetScanOut, ScanVideoOut, GetVideoScansOut, GetVideoScanOut
 from sqlalchemy.orm import Session
 from database import get_db
 from models import User
 from video_to_image import convert_video_to_images
-from query import create_file_result, put_image_to_bucket, call_endpoint, get_all_file_results, get_file_result, put_video_image_to_bucket
+from query import create_image_result, put_image_to_bucket, call_endpoint, get_all_image_results, get_image_result, create_video, get_all_videos, get_video, create_video_images, put_video_to_bucket, get_video_name_by_id, get_video_from_bucket, put_video_image_to_bucket
 
 
 router = APIRouter()
@@ -30,7 +30,7 @@ async def scan_text_from_image(images: list[UploadFile], current_user_email: Use
         await put_image_to_bucket(image_obj=image)
 
         # saving file result in db
-        file_result_id = await create_file_result(current_user_email, image.filename, db)
+        file_result_id = await create_image_result(current_user_email, image.filename, db)
         file_result_ids.append(file_result_id)
 
     # informing ocr_api to start scanning
@@ -40,7 +40,7 @@ async def scan_text_from_image(images: list[UploadFile], current_user_email: Use
     return response
 
 @router.post("/scan_video", response_model=ScanVideoOut)
-async def scan_text_from_image(video: UploadFile, current_user_email: User = Depends(auth_handler.auth_wrapper), db: Session = Depends(get_db)):
+async def scan_text_from_video(video: UploadFile, current_user_email: User = Depends(auth_handler.auth_wrapper), db: Session = Depends(get_db)):
 
     file_result_ids = []
     print(f"File Name: {video.filename}")
@@ -50,38 +50,69 @@ async def scan_text_from_image(video: UploadFile, current_user_email: User = Dep
             print("Video format not valid.")
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid video type.")
 
-    images = await convert_video_to_images(video.file)
+
+    await put_video_to_bucket(video_obj=video)
+    video_id = await create_video(
+        user_email=current_user_email,
+        video_name=video.filename,
+        db=db
+        )
+
+    # # informing ocr_api to start scanning
+    await call_endpoint(f"http://localhost:8000/video_to_images?video_id={video_id}")
+    # await call_endpoint(f"http://192.168.20.102:8001/video_to_images?video_id={video_id}")
+
+    response: ScanVideoOut = ScanVideoOut(message="video scanning queued", video_scan_id=video_id)
+    return response
+
+@router.get("/video_to_images", response_model=ScanVideoOut)
+async def scan_text_from_image(video_id: int, db: Session = Depends(get_db)):
+    video_name = await get_video_name_by_id(video_id, db)
+    video = await get_video_from_bucket(video_name)
+    images = await convert_video_to_images(video)
+
+    await create_video_images(
+        video_id=video_id,
+        images_number=len(images),
+        db=db
+        )
+
     for image_index, image in enumerate(images):
-        image_filename = f"{video.filename}_{image_index}.jpg"
+        image_filename = f"{video_name}_{image_index}.jpg"
         # uploading file to minIO
         await put_video_image_to_bucket(image_ndarrray=image, image_filename=image_filename)
 
-        # saving file result in db
-        file_result_id = await create_file_result(current_user_email, image_filename, db)
-        file_result_ids.append(file_result_id)
-
-        # informing ocr_api to start scanning
-        await call_endpoint("http://192.168.20.102:8002/start_scanning")
-        # break
-
-    response: ScanVideoOut = ScanVideoOut(message="under construction", scan_ids=[])
-    return response
+    print("calling")
+    # informing ocr_api to start scanning
+    await call_endpoint(f"http://192.168.20.102:8002/start_scanning")
 
 
 # get all scans of current user
-@router.get("/scans", response_model=GetScansOut)
-async def get_scans(skip: int = 0, limit: int = 10, current_user_email: User = Depends(auth_handler.auth_wrapper), db: Session = Depends(get_db)):
-    file_results = await get_all_file_results(skip, limit, current_user_email, db)
-    response: GetScansOut = GetScansOut(results=file_results)
+@router.get("/image_scans", response_model=GetImageScansOut)
+async def get_image_scans(skip: int = 0, limit: int = 10, current_user_email: User = Depends(auth_handler.auth_wrapper), db: Session = Depends(get_db)):
+    file_results = await get_all_image_results(skip, limit, current_user_email, db)
+    response: GetImageScansOut = GetImageScansOut(results=file_results)
     return response
 
 
 # get single scan of current user with a scan id (FileResult.id)
-@router.get("/scan", response_model=GetScanOut)
-async def get_scan(scan_id: int, current_user_email: User = Depends(auth_handler.auth_wrapper), db: Session = Depends(get_db)):
-    file_result = await get_file_result(scan_id, current_user_email, db)
+@router.get("/image_scan", response_model=GetScanOut)
+async def get_image_scan(image_scan_id: int, current_user_email: User = Depends(auth_handler.auth_wrapper), db: Session = Depends(get_db)):
+    file_result = await get_image_result(image_scan_id, current_user_email, db)
     if not file_result:
         raise HTTPException(status_code=404, detail="Scan not found")
 
     response: GetScanOut = GetScanOut(result=file_result)
+    return response
+
+@router.get("/video_scans", response_model=GetVideoScansOut)
+async def get_video_scans(skip: int = 0, limit: int = 10, current_user_email: User = Depends(auth_handler.auth_wrapper), db: Session = Depends(get_db)):
+    videos = await get_all_videos(skip, limit, current_user_email, db)
+    response: GetVideoScansOut = GetVideoScansOut(videos=videos)
+    return response
+
+@router.get("/video_scan", response_model=GetVideoScanOut)
+async def get_video_scan(video_id: int, frame_skip: int = 0, frame_limit: int = 10,current_user_email: User = Depends(auth_handler.auth_wrapper), db: Session = Depends(get_db)):
+    video = await get_video(video_id, frame_skip, frame_limit, current_user_email, db)
+    response: GetVideoScanOut = GetVideoScanOut(video=video)
     return response
