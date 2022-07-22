@@ -34,6 +34,8 @@ class DevConfig(Config):
     DB_DRIVER = config('DB_DRIVER')
     ACCESS_TOKEN_EXPIRE_MINUTES = config('ACCESS_TOKEN_EXPIRE_MINUTES', cast=int)
     SECRET_KEY = config('SECRET_KEY')
+    API_OCR_URL = config('API_OCR_URL')
+    API_Video_To_Images_URL = config('API_Video_To_Images_URL')
 
 
 class TestConfig(Config):

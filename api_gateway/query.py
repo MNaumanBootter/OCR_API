@@ -163,7 +163,15 @@ async def put_video_to_bucket(video_obj):
     return
 
 
-async def call_endpoint(url: str):
+async def call_video_to_images_api(video_scan_id: int):
+    url = f"http://{app_config.API_Video_To_Images_URL}/video_to_images?video_scan_id={video_scan_id}"
+    http_async_client = http3.AsyncClient()
+    r = await http_async_client.get(url)
+    return r.text
+
+
+async def call_scanning_api():
+    url = f"http://{app_config.API_OCR_URL}/start_scanning"
     http_async_client = http3.AsyncClient()
     r = await http_async_client.get(url)
     return r.text

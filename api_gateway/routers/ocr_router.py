@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models import User
 from video_to_image import convert_video_to_images
-from query import create_image_result, put_image_to_bucket, call_endpoint, get_all_image_results, get_image_result, create_video, get_all_videos, get_video, create_video_images, put_video_to_bucket, get_video_name_by_id, get_video_from_bucket, put_video_image_to_bucket
+from query import create_image_result, put_image_to_bucket, call_scanning_api, call_video_to_images_api, get_all_image_results, get_image_result, create_video, get_all_videos, get_video, create_video_images, put_video_to_bucket, get_video_name_by_id, get_video_from_bucket, put_video_image_to_bucket
 
 
 router = APIRouter()
@@ -34,7 +34,7 @@ async def scan_text_from_image(images: list[UploadFile], current_user_email: Use
         file_scan_ids.append(file_scan_id)
 
     # informing ocr_api to start scanning
-    await call_endpoint("http://192.168.20.102:8002/start_scanning")
+    await call_scanning_api()
 
     response: ScanImageOut = ScanImageOut(message="Image scanning queued", scan_ids=file_scan_ids)
     return response
@@ -58,7 +58,7 @@ async def scan_text_from_video(video: UploadFile, current_user_email: User = Dep
         )
 
     # # informing ocr_api to start scanning
-    await call_endpoint(f"http://localhost:8000/video_to_images?video_scan_id={video_scan_id}")
+    await call_video_to_images_api(video_scan_id)
     # await call_endpoint(f"http://192.168.20.102:8001/video_to_images?video_scan_id={video_scan_id}")
 
     response: ScanVideoOut = ScanVideoOut(message="video scanning queued", video_scan_id=video_scan_id)
@@ -82,9 +82,8 @@ async def video_to_images(video_scan_id: int, db: Session = Depends(get_db)):
         # uploading file to minIO
         await put_video_image_to_bucket(image_ndarrray=image, image_filename=image_filename)
 
-    print("calling")
     # informing ocr_api to start scanning
-    await call_endpoint(f"http://192.168.20.102:8002/start_scanning")
+    await call_scanning_api()
 
 
 # get all scans of current user
