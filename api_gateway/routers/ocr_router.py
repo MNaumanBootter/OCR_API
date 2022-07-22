@@ -58,14 +58,15 @@ async def scan_text_from_video(video: UploadFile, current_user_email: User = Dep
         )
 
     # # informing ocr_api to start scanning
-    await call_endpoint(f"http://localhost:8000/video_to_images?video_id={video_scan_id}")
-    # await call_endpoint(f"http://192.168.20.102:8001/video_to_images?video_id={video_id}")
+    await call_endpoint(f"http://localhost:8000/video_to_images?video_scan_id={video_scan_id}")
+    # await call_endpoint(f"http://192.168.20.102:8001/video_to_images?video_scan_id={video_scan_id}")
 
     response: ScanVideoOut = ScanVideoOut(message="video scanning queued", video_scan_id=video_scan_id)
     return response
 
 @router.get("/video_to_images", response_model=ScanVideoOut)
-async def scan_text_from_image(video_scan_id: int, db: Session = Depends(get_db)):
+async def video_to_images(video_scan_id: int, db: Session = Depends(get_db)):
+
     video_name = await get_video_name_by_id(video_scan_id, db)
     video = await get_video_from_bucket(video_name)
     images = await convert_video_to_images(video)

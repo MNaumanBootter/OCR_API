@@ -57,7 +57,7 @@ class VideoWithoutFrames(BaseModel):
     id: int
     video_name: str
     is_scanned: bool
-    frames_count: int
+    frames_count: int | None
     created_date: datetime.datetime
 
     class Config:
@@ -71,7 +71,7 @@ class VideoWithFrames(BaseModel):
     id: int
     video_name: str
     is_scanned: bool
-    frames_count: int
+    frames_count: int | None
     created_date: datetime.datetime
     frames: list[ImageResult]
 

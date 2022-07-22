@@ -84,8 +84,8 @@ async def create_video(user_email: str, video_name: str, db: Session):
     return created_video.id
 
 
-async def get_video_name_by_id(video_id: int, db: Session):
-    video = db.query(VideoScan).filter(VideoScan.id == video_id).first()
+async def get_video_name_by_id(video_scan_id: int, db: Session):
+    video = db.query(VideoScan).filter(VideoScan.id == video_scan_id).first()
     video_name = video.video_name
     return video_name
 
