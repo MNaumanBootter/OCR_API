@@ -2,7 +2,7 @@ from config import app_config
 from minio import Minio
 from celery import Celery
 from sqlalchemy.orm import Session
-from models import ImageResult
+from models import ImageScan
 from database import SessionLocal
 import easyocr
 from config import app_config
@@ -35,7 +35,7 @@ def scan_image():
         # loop until all records are scanned
         while(True):
             # getting unscanned record
-            unscanned_record: ImageResult = db.query(ImageResult).filter(ImageResult.is_scanned == False).first()
+            unscanned_record: ImageScan = db.query(ImageScan).filter(ImageScan.is_scanned == False).first()
 
             # if unscanned record found
             if unscanned_record:

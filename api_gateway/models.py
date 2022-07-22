@@ -18,12 +18,12 @@ class User(Base):
     is_active = Column(Boolean, default=True)
 
 
-class ImageResult(Base):
-    __tablename__ = "image_results"
+class ImageScan(Base):
+    __tablename__ = "image_scans"
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    video_id = Column(Integer, ForeignKey("videos.id"), nullable=True)
+    video_id = Column(Integer, ForeignKey("video_scans.id"), nullable=True)
     file_name = Column(String(255), nullable=False)
     is_scanned = Column(Boolean, nullable=False, default=False)
     _result = Column('result', Text())
@@ -38,13 +38,13 @@ class ImageResult(Base):
         self._result = str(value)
 
 
-class Video(Base):
-    __tablename__ = "videos"
+class VideoScan(Base):
+    __tablename__ = "video_scans"
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     video_name = Column(String(255), nullable=False)
     frames_count = Column(Integer)
     is_scanned = Column(Boolean, nullable=False, default=False)
-    frames = relationship("ImageResult", uselist=True, backref='videos')
+    frames = relationship("ImageScan", uselist=True, backref='video_scans')
     created_date = Column(DateTime, default=datetime.datetime.utcnow)

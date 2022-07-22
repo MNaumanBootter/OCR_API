@@ -46,11 +46,11 @@ class ScanVideoOut(BaseModel):
     video_scan_id: int
 
 class GetImageScansOut(BaseModel):
-    image_results: list[ImageResult]
+    image_scans: list[ImageResult]
 
 
 class GetScanOut(BaseModel):
-    image_results: ImageResult
+    image_scan: ImageResult
 
 
 class VideoWithoutFrames(BaseModel):
@@ -64,7 +64,7 @@ class VideoWithoutFrames(BaseModel):
         orm_mode = True
 
 class GetVideoScansOut(BaseModel):
-    videos: list[VideoWithoutFrames]
+    video_scans: list[VideoWithoutFrames]
 
 
 class VideoWithFrames(BaseModel):
@@ -80,4 +80,4 @@ class VideoWithFrames(BaseModel):
         orm_mode = True
 
 class GetVideoScanOut(BaseModel):
-    video: VideoWithFrames
+    video_scan: VideoWithFrames

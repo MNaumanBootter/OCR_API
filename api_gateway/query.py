@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models import User, ImageResult, Video
+from models import User, ImageScan, VideoScan
 from minio import Minio
 import http3
 from io import BytesIO
@@ -33,7 +33,7 @@ async def get_user_id_by_email(email: str, db: Session):
 
 async def create_image_result(user_email: str, file_name: str, db: Session):
     user_id = await get_user_id_by_email(user_email, db)
-    created_image_result = ImageResult(user_id=user_id, file_name=file_name, result=[])
+    created_image_result = ImageScan(user_id=user_id, file_name=file_name, result=[])
     db.add(created_image_result)
     db.commit()
     db.refresh(created_image_result)
@@ -58,13 +58,13 @@ async def create_image_result(user_email: str, file_name: str, db: Session):
 
 
 async def create_video_images(video_id: str, images_number: int, db: Session):
-    video = db.query(Video).filter(Video.id == video_id).first()
+    video = db.query(VideoScan).filter(VideoScan.id == video_id).first()
     video_name = video.video_name
     user_id  = video.user_id
 
     for image_index in range(images_number):
         image_filename = f"{video_name}_{image_index}.jpg"
-        created_image_result = ImageResult(user_id=user_id, file_name=image_filename, result=[])
+        created_image_result = ImageScan(user_id=user_id, file_name=image_filename, result=[])
         video.frames.append(created_image_result)
 
         db.add(created_image_result)
@@ -76,7 +76,7 @@ async def create_video_images(video_id: str, images_number: int, db: Session):
 
 async def create_video(user_email: str, video_name: str, db: Session):
     user_id = await get_user_id_by_email(user_email, db)
-    created_video = Video(user_id=user_id, video_name=video_name)
+    created_video = VideoScan(user_id=user_id, video_name=video_name)
 
     db.add(created_video)
     db.commit()
@@ -85,7 +85,7 @@ async def create_video(user_email: str, video_name: str, db: Session):
 
 
 async def get_video_name_by_id(video_id: int, db: Session):
-    video = db.query(Video).filter(Video.id == video_id).first()
+    video = db.query(VideoScan).filter(VideoScan.id == video_id).first()
     video_name = video.video_name
     return video_name
 
@@ -97,27 +97,28 @@ async def get_video_from_bucket(video_name):
 
 async def get_all_image_results(skip: int, limit: int, user_email: str, db: Session):
     user_id = await get_user_id_by_email(user_email, db)
-    image_results = db.query(ImageResult).filter(ImageResult.user_id == user_id, ImageResult.video_id.is_(None)).offset(skip).limit(limit).all()
+    image_results = db.query(ImageScan).filter(ImageScan.user_id == user_id, ImageScan.video_id.is_(None)).offset(skip).limit(limit).all()
     return image_results
 
 
 async def get_image_result(file_result_id, user_email: str, db: Session):
     user_id = await get_user_id_by_email(user_email, db)
-    image_result = db.query(ImageResult).filter(ImageResult.id == file_result_id, ImageResult.user_id == user_id).first()
+    image_result = db.query(ImageScan).filter(ImageScan.id == file_result_id, ImageScan.user_id == user_id).first()
     return image_result
 
 
 async def get_all_videos(skip: int, limit: int, user_email: str, db: Session):
     user_id = await get_user_id_by_email(user_email, db)
-    videos = db.query(Video).filter(Video.user_id == user_id).offset(skip).limit(limit).all()
-    return videos
+    video_scans = db.query(VideoScan).filter(VideoScan.user_id == user_id).offset(skip).limit(limit).all()
+    return video_scans
 
 
 async def get_video(video_id: int, frame_skip, frame_limit, user_email: str, db: Session):
     user_id = await get_user_id_by_email(user_email, db)
-    video = db.query(Video).filter(Video.id == video_id, ImageResult.user_id == user_id).first()
-    video.frames = video.frames[frame_skip : frame_skip+frame_limit]
-    return video
+    video_scan = db.query(VideoScan).filter(VideoScan.id == video_id, ImageScan.user_id == user_id).first()
+    if video_scan:
+        video_scan.frames = video_scan.frames[frame_skip : frame_skip+frame_limit]
+    return video_scan
 
 
 async def put_image_to_bucket(image_obj):
