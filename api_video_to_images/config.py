@@ -33,6 +33,7 @@ class DevConfig(Config):
     DB_DRIVER = config('DB_DRIVER')
     CELERY_BROKER_URL = config('CELERY_BROKER_URL')
     CELERY_RESULT_URL = config('CELERY_RESULT_URL')
+    API_OCR_URL = config('API_OCR_URL')
 
 
 class TestConfig(Config):

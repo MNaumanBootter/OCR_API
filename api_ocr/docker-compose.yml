@@ -3,9 +3,9 @@
 services:
 
   api:
-    image: ocr_api
+    image: api_ocr
     build: .
-    container_name: ocr_api
+    container_name: api_ocr
     restart: unless-stopped
     ports:
       - "${API_PORT}:${API_PORT_DOCKER}"
@@ -28,7 +28,7 @@ services:
 
   redis:
     image: redis:6.2-alpine
-    container_name: redis
+    container_name: redis_api_ocr
 
 
   celery_worker:

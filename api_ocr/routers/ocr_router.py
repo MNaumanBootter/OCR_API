@@ -1,4 +1,3 @@
-from email import message
 from fastapi import APIRouter
 from celery_tasks import scan_image
 from schemas import StartScanningOut

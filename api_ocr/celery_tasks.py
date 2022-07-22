@@ -41,7 +41,7 @@ def scan_image():
             if unscanned_record:
 
                 # fetching file bytes from minIO
-                file_bytes = minio_client.get_object(app_config.MINIO_BUCKET, unscanned_record.file_name).read()
+                file_bytes = minio_client.get_object(app_config.MINIO_IMAGE_BUCKET, unscanned_record.file_name).read()
 
                 # predicting image from ocr reader without bbox result
                 ocr_result = ocr_reader.readtext(file_bytes, detail=0)

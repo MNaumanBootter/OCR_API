@@ -4,8 +4,7 @@ from schemas import ScanImageOut, GetImageScansOut, GetScanOut, ScanVideoOut, Ge
 from sqlalchemy.orm import Session
 from database import get_db
 from models import User
-from video_to_image import convert_video_to_images
-from query import create_image_result, put_image_to_bucket, call_scanning_api, call_video_to_images_api, get_all_image_results, get_image_result, create_video, get_all_videos, get_video, create_video_images, put_video_to_bucket, get_video_name_by_id, get_video_from_bucket, put_video_image_to_bucket
+from query import create_image_scan, put_image_to_bucket, call_scanning_api, call_video_to_images_api, get_all_image_results, get_image_result, create_video_scan, get_all_videos, get_video, put_video_to_bucket
 
 
 router = APIRouter()
@@ -30,7 +29,7 @@ async def scan_text_from_image(images: list[UploadFile], current_user_email: Use
         await put_image_to_bucket(image_obj=image)
 
         # saving file result in db
-        file_scan_id = await create_image_result(current_user_email, image.filename, db)
+        file_scan_id = await create_image_scan(current_user_email, image.filename, db)
         file_scan_ids.append(file_scan_id)
 
     # informing ocr_api to start scanning
@@ -38,6 +37,7 @@ async def scan_text_from_image(images: list[UploadFile], current_user_email: Use
 
     response: ScanImageOut = ScanImageOut(message="Image scanning queued", scan_ids=file_scan_ids)
     return response
+
 
 @router.post("/scan_video", response_model=ScanVideoOut)
 async def scan_text_from_video(video: UploadFile, current_user_email: User = Depends(auth_handler.auth_wrapper), db: Session = Depends(get_db)):
@@ -51,7 +51,7 @@ async def scan_text_from_video(video: UploadFile, current_user_email: User = Dep
 
 
     await put_video_to_bucket(video_obj=video)
-    video_scan_id = await create_video(
+    video_scan_id = await create_video_scan(
         user_email=current_user_email,
         video_name=video.filename,
         db=db
@@ -63,27 +63,6 @@ async def scan_text_from_video(video: UploadFile, current_user_email: User = Dep
 
     response: ScanVideoOut = ScanVideoOut(message="video scanning queued", video_scan_id=video_scan_id)
     return response
-
-@router.get("/video_to_images", response_model=ScanVideoOut)
-async def video_to_images(video_scan_id: int, db: Session = Depends(get_db)):
-
-    video_name = await get_video_name_by_id(video_scan_id, db)
-    video = await get_video_from_bucket(video_name)
-    images = await convert_video_to_images(video)
-
-    await create_video_images(
-        video_id=video_scan_id,
-        images_number=len(images),
-        db=db
-        )
-
-    for image_index, image in enumerate(images):
-        image_filename = f"{video_name}_{image_index}.jpg"
-        # uploading file to minIO
-        await put_video_image_to_bucket(image_ndarrray=image, image_filename=image_filename)
-
-    # informing ocr_api to start scanning
-    await call_scanning_api()
 
 
 # get all scans of current user
@@ -104,11 +83,13 @@ async def get_image_scan(image_scan_id: int, current_user_email: User = Depends(
     response: GetScanOut = GetScanOut(image_scan=image_scan)
     return response
 
+
 @router.get("/video_scans", response_model=GetVideoScansOut)
 async def get_video_scans(skip: int = 0, limit: int = 10, current_user_email: User = Depends(auth_handler.auth_wrapper), db: Session = Depends(get_db)):
     video_scans = await get_all_videos(skip, limit, current_user_email, db)
     response: GetVideoScansOut = GetVideoScansOut(video_scans=video_scans)
     return response
+
 
 @router.get("/video_scan", response_model=GetVideoScanOut)
 async def get_video_scan(video_id: int, frame_skip: int = 0, frame_limit: int = 10,current_user_email: User = Depends(auth_handler.auth_wrapper), db: Session = Depends(get_db)):

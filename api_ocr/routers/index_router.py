@@ -7,5 +7,5 @@ router = APIRouter()
 @router.get("/", response_model=IndexOut)
 def index():
 
-    response: IndexOut = {"message": "Working."}
+    response: IndexOut = IndexOut(message="Working.")
     return response
