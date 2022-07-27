@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from database import engine, Base
-from routers.converter_router import router as converter_router
+from routers.video_router import router as video_router
 from routers.index_router import router as index_router
 from config import app_config
 import uvicorn
@@ -13,7 +13,7 @@ app = FastAPI()
 Base.metadata.create_all(bind=engine)
 
 # routers
-app.include_router(converter_router)
+app.include_router(video_router)
 app.include_router(index_router)
 
 

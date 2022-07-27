@@ -43,7 +43,6 @@ class ScanImageOut(BaseModel):
 
 class ScanVideoOut(BaseModel):
     message: str
-    video_scan_id: int
 
 class GetImageScansOut(BaseModel):
     image_scans: list[ImageResult]
@@ -81,3 +80,7 @@ class VideoWithFrames(BaseModel):
 
 class GetVideoScanOut(BaseModel):
     video_scan: VideoWithFrames
+
+
+class StartScanningOut(BaseModel):
+    message: str

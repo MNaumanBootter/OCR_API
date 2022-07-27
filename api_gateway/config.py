@@ -36,6 +36,9 @@ class DevConfig(Config):
     SECRET_KEY = config('SECRET_KEY')
     API_OCR_URL = config('API_OCR_URL')
     API_Video_To_Images_URL = config('API_Video_To_Images_URL')
+    FLOWER_PORT = config('FLOWER_PORT')
+    CELERY_BROKER_URL = config('CELERY_BROKER_URL')
+    CELERY_RESULT_URL = config('CELERY_RESULT_URL')
 
 
 class TestConfig(Config):

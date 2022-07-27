@@ -10,3 +10,4 @@ minio
 Pillow
 decord
 requests-async
+python-multipart

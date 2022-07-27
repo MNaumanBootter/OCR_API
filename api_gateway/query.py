@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
 from models import User, ImageScan, VideoScan
 from minio import Minio
-import http3
 from config import app_config
 
 
@@ -12,6 +11,7 @@ minio_client = Minio(
         secret_key=app_config.MINIO_PASSWORD
     )
 
+
 if not minio_client.bucket_exists(app_config.MINIO_IMAGE_BUCKET):
     minio_client.make_bucket(app_config.MINIO_IMAGE_BUCKET)
 else:
@@ -21,6 +21,8 @@ if not minio_client.bucket_exists(app_config.MINIO_VIDEO_BUCKET):
     minio_client.make_bucket(app_config.MINIO_VIDEO_BUCKET)
 else:
     print(f"Bucket {app_config.MINIO_VIDEO_BUCKET} connected")
+
+
 
 
 async def get_user_id_by_email(email: str, db: Session):
@@ -87,28 +89,34 @@ async def put_image_to_bucket(image_obj):
     return
 
 
-async def put_video_to_bucket(video_obj):
-    image_length = len(video_obj.file.read())
-    video_obj.file.seek(0)
+# async def put_video_to_bucket(video_obj):
+#     image_length = len(video_obj.file.read())
+#     video_obj.file.seek(0)
 
-    minio_client.put_object(
-        bucket_name=app_config.MINIO_VIDEO_BUCKET,
-        object_name=video_obj.filename,
-        length=image_length,
-        data=video_obj.file
-    )
-    return
-
-
-async def call_video_to_images_api(video_scan_id: int):
-    url = f"http://{app_config.API_Video_To_Images_URL}/video_to_images?video_scan_id={video_scan_id}"
-    http_async_client = http3.AsyncClient()
-    r = await http_async_client.get(url)
-    return r.text
+#     minio_client.put_object(
+#         bucket_name=app_config.MINIO_VIDEO_BUCKET,
+#         object_name=video_obj.filename,
+#         length=image_length,
+#         data=video_obj.file
+#     )
+#     return
 
 
-async def call_scanning_api():
-    url = f"http://{app_config.API_OCR_URL}/start_scanning"
-    http_async_client = http3.AsyncClient()
-    r = await http_async_client.get(url)
-    return r.text
+# async def call_video_to_images_api(video_scan_id: int):
+#     async with aiohttp.ClientSession() as session:
+#         url = f"http://{app_config.API_Video_To_Images_URL}/start_scanning"
+#         async with session.get(url) as response_http:
+#             response = await response_http.json()
+#     return response
+
+
+# async def call_images_api():
+#     try:
+#         async with aiohttp.ClientSession() as session:
+#             url = f"http://{app_config.API_OCR_URL}/start_scanning"
+#             async with session.get(url) as response_http:
+#                 response = await response_http.json()
+#     except:
+#         return None
+#     return response
+

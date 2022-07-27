@@ -3,9 +3,9 @@
 services:
 
   api:
-    image: api_video_to_images
+    image: api_video
     build: .
-    container_name: api_video_to_images
+    container_name: api_video
     restart: unless-stopped
     ports:
       - "${API_PORT}:${API_PORT_DOCKER}"

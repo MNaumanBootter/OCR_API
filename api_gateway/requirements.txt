@@ -9,4 +9,6 @@ python-multipart
 python-decouple
 uvicorn
 minio
-requests-async
+aiohttp
+timeloop
+requests

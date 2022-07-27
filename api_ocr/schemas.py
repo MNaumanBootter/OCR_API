@@ -7,3 +7,4 @@ class IndexOut(BaseModel):
 
 class StartScanningOut(BaseModel):
     message: str
+    status: bool
